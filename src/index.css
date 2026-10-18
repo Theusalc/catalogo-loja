@@ -31,3 +31,7 @@ button:disabled { opacity: .6; }
 .previa { width: 160px; border-radius: 8px; }
 .qr { width: 200px; background: #fff; padding: 8px; border-radius: 8px; align-self: center; }
 .segredo { word-break: break-all; font-family: ui-monospace, Consolas, monospace; font-size: 13px; background: #e9e6df; padding: 8px; border-radius: 6px; }
+.busca { width: 100%; box-sizing: border-box; margin-bottom: 12px; }
+.filtros { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; }
+.chip { flex: none; background: #fff; color: #8b5e3c; border: 1px solid #8b5e3c; border-radius: 99px; padding: 6px 14px; }
+.chip.ativo { background: #8b5e3c; color: #fff; }

@@ -7,3 +7,25 @@ main { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
 .card img { width: 100%; border-radius: 8px; }
 .card a { margin-top: auto; text-align: center; background: #25d366; color: #fff; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 600; }
 .aviso { padding: 24px; text-align: center; }
+.login { max-width: 360px; margin: 48px auto; padding: 0 16px; }
+.login form { display: flex; flex-direction: column; gap: 14px; }
+.login label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+input, select, textarea { font: inherit; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+button { font: inherit; padding: 10px 14px; border: 0; border-radius: 8px; background: #8b5e3c; color: #fff; cursor: pointer; }
+button:disabled { opacity: .6; }
+.erro { color: #b00020; margin: 0; }
+.painel { max-width: 720px; }
+.topo { display: flex; justify-content: space-between; align-items: center; }
+.email { color: #666; font-size: 14px; margin: 0 0 16px; }
+.acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+.sec { background: transparent; color: #8b5e3c; border: 1px solid #8b5e3c; }
+.perigo { background: #b00020; }
+.linha { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: #fff; border-radius: 10px; padding: 10px; margin-top: 10px; }
+.linha.inativo { opacity: .55; }
+.miniatura { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; background: #e4e1da; flex: none; }
+.info { flex: 1; min-width: 140px; display: flex; flex-direction: column; }
+.info span { color: #666; font-size: 14px; }
+.form-produto { display: flex; flex-direction: column; gap: 14px; }
+.form-produto label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.form-produto .check { flex-direction: row; align-items: center; gap: 8px; }
+.previa { width: 160px; border-radius: 8px; }

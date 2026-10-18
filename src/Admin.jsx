@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
 import Painel from './Painel'
+import ExigeMfa from './ExigeMfa'
 
 export default function Admin() {
   const [sessao, setSessao] = useState(null)
@@ -67,5 +68,9 @@ export default function Admin() {
     )
   }
 
-  return <Painel email={sessao.user.email} />
+    return (
+    <ExigeMfa>
+      <Painel email={sessao.user.email} />
+    </ExigeMfa>
+  )
 }

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
 
+const MAX_FOTOS = 6
+
 const VAZIO = {
   id: null, codigo: '', nome: '', descricao: '',
-  preco: '', categoria_id: '', foto_url: '', ativo: true,
+  preco: '', categoria_id: '', foto_url: '', fotos: [], ativo: true,
 }
 
 const brl = (v) =>
@@ -26,13 +28,45 @@ function FormProduto({ inicial, categorias, onSalvo, onCancelar }) {
     categoria_id: inicial.categoria_id ?? '',
     codigo: inicial.codigo ?? '',
     descricao: inicial.descricao ?? '',
-    foto_url: inicial.foto_url ?? '',
   })
-  const [arquivo, setArquivo] = useState(null)
+  // cada item: { url, previa } (já enviada) ou { arquivo, previa } (nova)
+  const [fotos, setFotos] = useState(() => {
+    const atuais = inicial.fotos?.length
+      ? inicial.fotos
+      : inicial.foto_url
+        ? [inicial.foto_url]
+        : []
+    return atuais.map((url) => ({ url, previa: url }))
+  })
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState(null)
 
   const mudar = (campo) => (e) => setF({ ...f, [campo]: e.target.value })
+
+  function adicionar(e) {
+    const novos = Array.from(e.target.files).map((arquivo) => ({
+      arquivo,
+      previa: URL.createObjectURL(arquivo),
+    }))
+    setFotos((lista) => [...lista, ...novos].slice(0, MAX_FOTOS))
+    e.target.value = ''
+  }
+
+  function remover(i) {
+    setFotos((lista) => lista.filter((_, k) => k !== i))
+  }
+
+  function mover(i, dir) {
+    setFotos((lista) => {
+      const j = i + dir
+      if (j < 0 || j >= lista.length) return lista
+      const copia = [...lista]
+      const tmp = copia[i]
+      copia[i] = copia[j]
+      copia[j] = tmp
+      return copia
+    })
+  }
 
   async function salvar(e) {
     e.preventDefault()
@@ -41,10 +75,14 @@ function FormProduto({ inicial, categorias, onSalvo, onCancelar }) {
     if (Number.isNaN(preco)) return setErro('Preço inválido.')
     setSalvando(true)
 
-    let foto_url = f.foto_url || null
-    if (arquivo) {
-      const blob = await reduzir(arquivo)
-      const nome = `${Date.now()}-${(f.codigo || 'produto').replace(/[^a-zA-Z0-9_-]/g, '')}.jpg`
+    const urls = []
+    for (const item of fotos) {
+      if (item.url) {
+        urls.push(item.url)
+        continue
+      }
+      const blob = await reduzir(item.arquivo)
+      const nome = `${Date.now()}-${urls.length}-${(f.codigo || 'produto').replace(/[^a-zA-Z0-9_-]/g, '')}.jpg`
       const { error: errUp } = await supabase.storage
         .from('fotos')
         .upload(nome, blob, { contentType: 'image/jpeg' })
@@ -52,7 +90,7 @@ function FormProduto({ inicial, categorias, onSalvo, onCancelar }) {
         setSalvando(false)
         return setErro('Erro ao enviar a foto: ' + errUp.message)
       }
-      foto_url = supabase.storage.from('fotos').getPublicUrl(nome).data.publicUrl
+      urls.push(supabase.storage.from('fotos').getPublicUrl(nome).data.publicUrl)
     }
 
     const dados = {
@@ -61,7 +99,8 @@ function FormProduto({ inicial, categorias, onSalvo, onCancelar }) {
       descricao: f.descricao.trim() || null,
       preco,
       categoria_id: f.categoria_id || null,
-      foto_url,
+      fotos: urls,
+      foto_url: urls[0] ?? null,
       ativo: f.ativo,
     }
     const { error } = f.id
@@ -96,16 +135,28 @@ function FormProduto({ inicial, categorias, onSalvo, onCancelar }) {
           ))}
         </select>
       </label>
-      <label>Foto
-        <input type="file" accept="image/*" onChange={(e) => setArquivo(e.target.files[0])} />
-      </label>
-      {(arquivo || f.foto_url) && (
-        <img
-          className="previa"
-          src={arquivo ? URL.createObjectURL(arquivo) : f.foto_url}
-          alt="Prévia"
-        />
-      )}
+
+      <div>
+        <strong>Fotos ({fotos.length}/{MAX_FOTOS})</strong>
+        <p className="dica">A primeira foto é a capa que aparece no catálogo.</p>
+        <div className="fotos-edicao">
+          {fotos.map((it, i) => (
+            <div key={it.previa} className="foto-item">
+              <img src={it.previa} alt="" />
+              {i === 0 && <span className="capa">Capa</span>}
+              <div className="foto-acoes">
+                <button type="button" className="sec" disabled={i === 0} onClick={() => mover(i, -1)}>←</button>
+                <button type="button" className="sec" disabled={i === fotos.length - 1} onClick={() => mover(i, 1)}>→</button>
+                <button type="button" className="perigo" onClick={() => remover(i)}>×</button>
+              </div>
+            </div>
+          ))}
+        </div>
+        {fotos.length < MAX_FOTOS && (
+          <input type="file" accept="image/*" multiple onChange={adicionar} />
+        )}
+      </div>
+
       <label className="check">
         <input
           type="checkbox"

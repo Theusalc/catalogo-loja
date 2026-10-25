@@ -1,6 +1,8 @@
+
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from './supabaseClient'
 import VoltarAoTopo from './VoltarAoTopo'
+import Detalhe from './Detalhe'
 
 const WHATSAPP = '55017981312643' // troque: 55 + DDD + número, só dígitos
 
@@ -12,6 +14,7 @@ export default function Catalogo() {
   const [categorias, setCategorias] = useState([])
   const [busca, setBusca] = useState('')
   const [categoria, setCategoria] = useState('todas')
+  const [aberto, setAberto] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
 
@@ -19,7 +22,7 @@ export default function Catalogo() {
     Promise.all([
       supabase
         .from('produtos')
-        .select('id, nome, descricao, preco, foto_url, categoria_id')
+        .select('id, nome, descricao, preco, foto_url, fotos, categoria_id')
         .order('nome'),
       supabase.from('categorias').select('id, nome').order('nome'),
     ]).then(([p, c]) => {
@@ -83,12 +86,20 @@ export default function Catalogo() {
       <div className="grade">
         {filtrados.map((p) => (
           <article key={p.id} className="card">
-            <div className="foto">
+            <button
+              type="button"
+              className="foto"
+              onClick={() => setAberto(p)}
+              aria-label={`Ver detalhes de ${p.nome}`}
+            >
               {p.foto_url && (
                 <img src={p.foto_url} alt={p.nome} loading="lazy" />
               )}
-            </div>
-            <h2>{p.nome}</h2>
+              {p.fotos?.length > 1 && (
+                <span className="qtd">{p.fotos.length} fotos</span>
+              )}
+            </button>
+            <h2 onClick={() => setAberto(p)}>{p.nome}</h2>
             <p>{p.descricao}</p>
             <strong>
               {Number(p.preco).toLocaleString('pt-BR', {
@@ -108,6 +119,14 @@ export default function Catalogo() {
           </article>
         ))}
       </div>
+
+      {aberto && (
+        <Detalhe
+          produto={aberto}
+          whatsapp={WHATSAPP}
+          onFechar={() => setAberto(null)}
+        />
+      )}
 
       <VoltarAoTopo />
     </main>

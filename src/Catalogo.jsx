@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from './supabaseClient'
+import VoltarAoTopo from './VoltarAoTopo'
 
 const WHATSAPP = '55017981312643' // troque: 55 + DDD + número, só dígitos
 
@@ -44,7 +45,7 @@ export default function Catalogo() {
   if (erro) return <p className="aviso">Não foi possível carregar: {erro}</p>
 
   return (
-    <main>
+    <main className="catalogo">
       <h1>Nossos produtos</h1>
 
       <input
@@ -82,7 +83,11 @@ export default function Catalogo() {
       <div className="grade">
         {filtrados.map((p) => (
           <article key={p.id} className="card">
-            {p.foto_url && <img src={p.foto_url} alt={p.nome} />}
+            <div className="foto">
+              {p.foto_url && (
+                <img src={p.foto_url} alt={p.nome} loading="lazy" />
+              )}
+            </div>
             <h2>{p.nome}</h2>
             <p>{p.descricao}</p>
             <strong>
@@ -103,6 +108,8 @@ export default function Catalogo() {
           </article>
         ))}
       </div>
+
+      <VoltarAoTopo />
     </main>
   )
 }

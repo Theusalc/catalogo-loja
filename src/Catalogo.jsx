@@ -6,8 +6,9 @@ import VoltarAoTopo from './VoltarAoTopo'
 import Detalhe from './Detalhe'
 import { Preco, Selos, precoFinal } from './Preco'
 import Imagem from './Imagem'
+import Petalas from './Petalas'
 
-const WHATSAPP = '55017981312643' // troque: 55 + DDD + número, só dígitos
+const WHATSAPP = '5517981607694' // 55 + DDD + número, só dígitos
 
 const semAcento = (s) =>
   (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
@@ -123,35 +124,28 @@ export default function Catalogo() {
         onChange={(e) => setBusca(e.target.value)}
       />
 
-      <label className="ordenar">
-        Ordenar por
-        <select value={ordem} onChange={(e) => setOrdem(e.target.value)}>
-          <option value="destaque">Em destaque</option>
-          <option value="menor">Menor preço</option>
-          <option value="maior">Maior preço</option>
-          <option value="nome">Nome (A–Z)</option>
-        </select>
-      </label>
-
-      {categorias.length > 0 && (
-        <div className="filtros">
-          <button
-            className={`chip ${categoria === 'todas' ? 'ativo' : ''}`}
-            onClick={() => setCategoria('todas')}
-          >
-            Todas
-          </button>
-          {categorias.map((c) => (
-            <button
-              key={c.id}
-              className={`chip ${categoria === String(c.id) ? 'ativo' : ''}`}
-              onClick={() => setCategoria(String(c.id))}
-            >
-              {c.nome}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="selecoes">
+        {categorias.length > 0 && (
+          <label className="selecao">
+            <span>Categoria</span>
+            <select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+              <option value="todas">Todas</option>
+              {categorias.map((c) => (
+                <option key={c.id} value={String(c.id)}>{c.nome}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        <label className="selecao">
+          <span>Ordenar por</span>
+          <select value={ordem} onChange={(e) => setOrdem(e.target.value)}>
+            <option value="destaque">Em destaque</option>
+            <option value="menor">Menor preço</option>
+            <option value="maior">Maior preço</option>
+            <option value="nome">Nome (A–Z)</option>
+          </select>
+        </label>
+      </div>
       </div>
 
       {id && !aberto && (
@@ -209,6 +203,31 @@ export default function Catalogo() {
           onFechar={fechar}
         />
       )}
+
+      <Petalas />
+
+      <a
+        className="whats-flutuante"
+        href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
+          'Olá! Vim pelo catálogo da Toque Feminino.'
+        )}`}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Chamar a loja no WhatsApp"
+        title="Chamar no WhatsApp"
+      >
+        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M12 3.5c-5 0-9 3.500-9 7.800 0 2.300 1.100 4.300 2.900 5.700L5 21l4.300-2.200c.9.2 1.800.3 2.700.3 5 0 9-3.500 9-7.800s-4-7.800-9-7.800z"
+          />
+          <g fill="#1ebe5a">
+            <circle cx="8" cy="11.300" r="1.200" />
+            <circle cx="12" cy="11.300" r="1.200" />
+            <circle cx="16" cy="11.300" r="1.200" />
+          </g>
+        </svg>
+      </a>
 
       <VoltarAoTopo />
     </main>

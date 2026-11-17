@@ -98,3 +98,21 @@ button:disabled { opacity: .6; }
 .capa { position: absolute; top: 10px; left: 10px; background: #8b5e3c; color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 99px; }
 .foto-acoes { display: flex; gap: 4px; margin-top: 6px; }
 .foto-acoes button { flex: 1; padding: 4px 0; }
+
+/* ===== Logo, ordenação, selos, promoção, compartilhar ===== */
+.topo-loja { text-align: center; margin-bottom: 10px; }
+.topo-loja h1 { margin: 0; line-height: 0; }
+.topo-loja img { height: 64px; width: auto; max-width: 80%; }
+@media (min-width: 640px) { .topo-loja img { height: 84px; } }
+.ordenar { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #666; margin-bottom: 10px; }
+.ordenar select { padding: 6px 8px; }
+.card .foto { position: relative; display: block; padding: 0; }
+.selos { position: absolute; top: 6px; left: 6px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; z-index: 1; pointer-events: none; }
+.selo { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 99px; color: #fff; line-height: 1.2; }
+.selo.promo { background: #c62828; }
+.selo.destaque { background: #8b5e3c; }
+.preco-promo { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px; }
+.preco-promo s { color: #888; font-size: 13px; }
+.preco-promo strong { color: #c62828; }
+.galeria { position: relative; }
+.btn-compartilhar { width: 100%; margin-top: 8px; }

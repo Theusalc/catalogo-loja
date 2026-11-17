@@ -363,3 +363,16 @@ img, svg { max-width: 100%; }
   .linha .acoes { width: 100%; }
   .linha .acoes button { flex: 1; padding: 8px 6px; font-size: 14px; }
 }
+
+/* ===== seta de voltar ao topo: discreta, alinhada com o botão do WhatsApp ===== */
+.btn-topo { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; font-size: 0; color: var(--rosa-escuro); background: rgba(255,255,255,.94) !important; border: 1px solid var(--rosa-claro); box-shadow: 0 6px 18px rgba(166,95,94,.28); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  right: calc(max(16px, env(safe-area-inset-right, 0px)) + 6px); bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+  animation: none; opacity: 0; transform: translateY(14px) scale(.8); pointer-events: none;
+  transition: opacity .35s var(--suave), transform .35s var(--suave), box-shadow .25s, background-color .25s, color .25s; }
+.btn-topo.visivel { opacity: 1; transform: none; pointer-events: auto; }
+.btn-topo.visivel:hover { transform: translateY(-3px); color: #fff; background: var(--rosa-escuro) !important; border-color: var(--rosa-escuro); }
+.btn-topo.visivel:active { transform: scale(.92); }
+.btn-topo svg { transition: transform .25s var(--suave); }
+.btn-topo.visivel:hover svg { transform: translateY(-2px); }
+.whats-flutuante { bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+.btn-flores { bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }

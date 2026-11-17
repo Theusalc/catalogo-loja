@@ -14,7 +14,7 @@ export default defineConfig({
         short_name: 'Toque',
         description: 'Catálogo de produtos da Toque Feminino',
         lang: 'pt-BR',
-        theme_color: '#a65f5e',
+        theme_color: '#fbf3f0',
         background_color: '#fbf3f0',
         display: 'standalone',
         start_url: '/',

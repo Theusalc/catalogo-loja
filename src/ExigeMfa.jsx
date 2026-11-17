@@ -9,10 +9,9 @@ export default function ExigeMfa({ children }) {
   const [codigo, setCodigo] = useState('')
   const [erro, setErro] = useState(null)
   const [ocupado, setOcupado] = useState(false)
-  const [debug, setDebug] = useState('')
   const iniciou = useRef(false)
 
-  async function avaliar(origem) {
+  async function avaliar() {
     const { data, error } =
       await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
     if (error) return setErro(error.message)
@@ -20,15 +19,6 @@ export default function ExigeMfa({ children }) {
     const { data: fatores, error: errLista } =
       await supabase.auth.mfa.listFactors()
     if (errLista) return setErro(errLista.message)
-
-    const resumo =
-      origem +
-      ': nivel atual=' + data.currentLevel +
-      ', proximo=' + data.nextLevel +
-      ', fatores=' +
-      (fatores.all.map((f) => f.factor_type + '/' + f.status).join(', ') || 'nenhum')
-    console.log(resumo)
-    setDebug(resumo)
 
     if (data.currentLevel === 'aal2') return setEtapa('ok')
 
@@ -56,7 +46,7 @@ export default function ExigeMfa({ children }) {
   useEffect(() => {
     if (iniciou.current) return
     iniciou.current = true
-    avaliar('inicio')
+    avaliar()
   }, [])
 
   async function confirmar(e) {
@@ -74,7 +64,7 @@ export default function ExigeMfa({ children }) {
         setErro('Não foi possível verificar: ' + error.message)
         return
       }
-      await avaliar('apos verificar')
+      await avaliar()
     } catch (err) {
       console.error('Excecao MFA:', err)
       setErro('Erro inesperado: ' + err.message)

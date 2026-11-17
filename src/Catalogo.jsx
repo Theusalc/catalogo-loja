@@ -63,6 +63,28 @@ export default function Catalogo() {
   const abrir = (p) => navigate(`/produto/${p.id}`)
   const fechar = () => navigate('/')
 
+  // os cards aparecem suavemente conforme entram na tela
+  useEffect(() => {
+    if (carregando) return
+    const itens = document.querySelectorAll('.card.revelar:not(.dentro)')
+    if (!('IntersectionObserver' in window)) {
+      itens.forEach((el) => el.classList.add('dentro'))
+      return
+    }
+    const obs = new IntersectionObserver(
+      (entradas) =>
+        entradas.forEach((en) => {
+          if (en.isIntersecting) {
+            en.target.classList.add('dentro')
+            obs.unobserve(en.target)
+          }
+        }),
+      { rootMargin: '0px 0px -6% 0px', threshold: 0.05 }
+    )
+    itens.forEach((el) => obs.observe(el))
+    return () => obs.disconnect()
+  }, [carregando, filtrados, ordem, categoria])
+
   if (carregando)
     return (
       <main className="catalogo" aria-busy="true">
@@ -143,12 +165,12 @@ export default function Catalogo() {
         <p className="aviso">Nenhum produto encontrado.</p>
       )}
 
-      <div className="grade">
+      <div className="grade" key={`${ordem}-${categoria}`}>
         {filtrados.map((p, n) => (
           <article
             key={p.id}
-            className="card"
-            style={{ '--i': Math.min(n, 14) }}
+            className="card revelar"
+            style={{ '--i': n % 4 }}
           >
             <button
               type="button"

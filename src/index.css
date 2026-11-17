@@ -154,7 +154,7 @@ input, select, textarea { border-color: #e6d3cf; background: #fff; color: var(--
 .chip.ativo { background: var(--rosa-escuro); border-color: var(--rosa-escuro); color: #fff; box-shadow: 0 4px 12px rgba(166,95,94,.35); }
 
 /* cards */
-.card { background: #fff; border-radius: 18px; box-shadow: 0 2px 14px rgba(48,66,76,.07); transition: transform .35s var(--suave), box-shadow .35s var(--suave); animation: subir .6s var(--suave) both; animation-delay: calc(var(--i, 0) * 55ms); }
+.card { background: #fff; border-radius: 18px; box-shadow: 0 2px 14px rgba(48,66,76,.07); transition: transform .35s var(--suave), box-shadow .35s var(--suave); }
 .card .foto { border-radius: 14px; background: linear-gradient(135deg, #f3e6e3, #fbf3f0); }
 .card .foto img { transition: transform .8s var(--suave), opacity .5s ease; }
 .card h2 { color: var(--petroleo); }
@@ -224,3 +224,28 @@ button:not(.sec):not(.perigo):not(.chip):not(.seta):not(.mini):not(.modal-fechar
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
 }
+
+/* ===== toque final: mais suave e limpo ===== */
+html { scrollbar-gutter: stable; }
+
+/* cards aparecem ao entrar na tela */
+.card.revelar { opacity: 0; transform: translateY(26px) scale(.98); }
+.card.revelar.dentro { opacity: 1; transform: none; transition: opacity .7s var(--suave), transform .7s var(--suave), box-shadow .35s var(--suave); transition-delay: calc(var(--i, 0) * 70ms); }
+@media (hover: hover) {
+  .card.revelar.dentro:hover { transform: translateY(-6px); transition-delay: 0ms; transition: transform .35s var(--suave), box-shadow .35s var(--suave); }
+}
+
+/* janela do produto sem barra lateral e com saída suave */
+.modal-caixa { overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; overscroll-behavior: contain; }
+.modal-caixa::-webkit-scrollbar { display: none; }
+.modal-info { animation: surgir .5s ease .12s both; }
+.modal.saindo { animation: sumir .22s ease forwards; pointer-events: none; }
+.modal.saindo .modal-caixa { animation: descer-modal .22s ease forwards; }
+@keyframes sumir { to { opacity: 0; } }
+@keyframes descer-modal { to { transform: translateY(40px) scale(.98); opacity: 0; } }
+
+/* foto da galeria: cantos e respiro mais suaves */
+.galeria { border-radius: 16px 16px 0 0; overflow: hidden; }
+@media (min-width: 640px) { .galeria { border-radius: 16px 16px 0 0; } }
+.modal-info { gap: 10px; padding: 16px 18px 20px; }
+.modal-info p { line-height: 1.5; }

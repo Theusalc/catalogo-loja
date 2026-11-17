@@ -12,6 +12,16 @@ export default function Detalhe({ produto, whatsapp, onFechar }) {
   const [i, setI] = useState(0)
   const toqueX = useRef(null)
   const [aviso, setAviso] = useState(null)
+  const [saindo, setSaindo] = useState(false)
+  const fechando = useRef(false)
+
+  // fecha com uma animaçãozinha de saída
+  function fechar() {
+    if (fechando.current) return
+    fechando.current = true
+    setSaindo(true)
+    setTimeout(onFechar, 220)
+  }
 
   async function aoCompartilhar() {
     const r = await compartilhar(produto)
@@ -25,7 +35,7 @@ export default function Detalhe({ produto, whatsapp, onFechar }) {
 
   useEffect(() => {
     const tecla = (e) => {
-      if (e.key === 'Escape') onFechar()
+      if (e.key === 'Escape') fechar()
       if (fotos.length > 1 && e.key === 'ArrowLeft') passo(-1)
       if (fotos.length > 1 && e.key === 'ArrowRight') passo(1)
     }
@@ -50,9 +60,9 @@ export default function Detalhe({ produto, whatsapp, onFechar }) {
   }
 
   return (
-    <div className="modal" onClick={onFechar} role="dialog" aria-modal="true">
+    <div className={`modal ${saindo ? 'saindo' : ''}`} onClick={fechar} role="dialog" aria-modal="true">
       <div className="modal-caixa" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-fechar" onClick={onFechar} aria-label="Fechar">
+        <button className="modal-fechar" onClick={fechar} aria-label="Fechar">
           ×
         </button>
 

@@ -1,5 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from './supabaseClient'
+import {
+  BotaoAuth,
+  CartaoAuth,
+  Carregando,
+  CodigoSeisDigitos,
+  Erro,
+  IconeCelular,
+  IconeEscudo,
+} from './Auth'
+
+function mensagemMfa(error) {
+  const m = (error?.message || '').toLowerCase()
+  if (m.includes('invalid') || m.includes('expired'))
+    return 'Código incorreto ou expirado. Espere o próximo código no app e tente de novo.'
+  if (m.includes('rate') || m.includes('too many'))
+    return 'Muitas tentativas. Aguarde um minuto.'
+  return 'Não foi possível verificar. Tente de novo.'
+}
 
 export default function ExigeMfa({ children }) {
   const [etapa, setEtapa] = useState('carregando') // carregando | cadastrar | verificar | ok
@@ -9,6 +27,8 @@ export default function ExigeMfa({ children }) {
   const [codigo, setCodigo] = useState('')
   const [erro, setErro] = useState(null)
   const [ocupado, setOcupado] = useState(false)
+  const [copiado, setCopiado] = useState(false)
+  const [tentativa, setTentativa] = useState(0)
   const iniciou = useRef(false)
 
   async function avaliar() {
@@ -49,25 +69,39 @@ export default function ExigeMfa({ children }) {
     avaliar()
   }, [])
 
-  async function confirmar(e) {
-    e.preventDefault()
+  async function copiarChave() {
+    try {
+      await navigator.clipboard.writeText(segredo)
+      setCopiado(true)
+      setTimeout(() => setCopiado(false), 2000)
+    } catch {
+      /* sem acesso à área de transferência: a chave continua visível */
+    }
+  }
+
+  async function confirmar(e, codigoPronto) {
+    e?.preventDefault()
+    const cod = (codigoPronto ?? codigo).trim()
+    if (cod.length !== 6 || ocupado) return
     setErro(null)
     setOcupado(true)
     try {
       const { error } = await supabase.auth.mfa.challengeAndVerify({
         factorId: fatorId,
-        code: codigo.trim(),
+        code: cod,
       })
       if (error) {
         console.error('Erro MFA:', error)
         setCodigo('')
-        setErro('Não foi possível verificar: ' + error.message)
+        setErro(mensagemMfa(error))
+        setTentativa((t) => t + 1)
         return
       }
       await avaliar()
     } catch (err) {
       console.error('Excecao MFA:', err)
-      setErro('Erro inesperado: ' + err.message)
+      setErro('Erro inesperado. Tente de novo.')
+      setTentativa((t) => t + 1)
     } finally {
       setOcupado(false)
     }
@@ -76,53 +110,100 @@ export default function ExigeMfa({ children }) {
   if (etapa === 'ok') return children
   if (etapa === 'carregando') {
     return erro ? (
-      <p className="erro aviso">{erro}</p>
+      <CartaoAuth titulo="Algo deu errado" icone={<IconeEscudo />}>
+        <Erro>{erro}</Erro>
+        <button type="button" className="auth-botao" onClick={() => window.location.reload()}>
+          Tentar de novo
+        </button>
+      </CartaoAuth>
     ) : (
-      <p className="aviso">Carregando...</p>
+      <Carregando texto="Verificando acesso..." />
     )
   }
 
+  const sair = (
+    <button type="button" className="auth-link" onClick={() => supabase.auth.signOut()}>
+      Sair e usar outra conta
+    </button>
+  )
+
+  const formulario = (
+    <form className="auth-form" onSubmit={confirmar}>
+      <CodigoSeisDigitos
+        valor={codigo}
+        onChange={setCodigo}
+        onCompleto={(c) => confirmar(null, c)}
+        desabilitado={ocupado}
+        erro={tentativa}
+      />
+      <Erro>{erro}</Erro>
+      <BotaoAuth ocupado={ocupado} textoOcupado="Verificando..." disabled={codigo.length !== 6}>
+        Confirmar
+      </BotaoAuth>
+    </form>
+  )
+
+  if (etapa === 'verificar') {
+    return (
+      <CartaoAuth
+        icone={<IconeEscudo />}
+        titulo="Verificação em 2 etapas"
+        subtitulo="Abra o app autenticador no seu celular e digite o código de 6 dígitos da Toque Feminino."
+        rodape={sair}
+      >
+        {formulario}
+        <p className="auth-dica">O código muda a cada 30 segundos. Se errar, é só esperar o próximo.</p>
+      </CartaoAuth>
+    )
+  }
+
+  // etapa === 'cadastrar'
   return (
-    <main className="login">
-      <h1>
-        {etapa === 'cadastrar'
-          ? 'Ativar verificação em 2 etapas'
-          : 'Verificação em 2 etapas'}
-      </h1>
-      {etapa === 'cadastrar' && (
-        <>
-          <p>
-            1. Abra um app autenticador (Google Authenticator, Authy,
-            1Password...) e escaneie o QR code.
-          </p>
-          <img className="qr" src={qr} alt="QR code para o app autenticador" />
-          <p>Se não conseguir escanear, digite esta chave no app:</p>
-          <p className="segredo">{segredo}</p>
-          <p>Guarde essa chave no seu gerenciador de senhas: é o seu backup.</p>
-          <p>2. Digite o código de 6 dígitos que o app mostrar:</p>
-        </>
-      )}
-      {etapa === 'verificar' && (
-        <p>Digite o código de 6 dígitos do seu app autenticador.</p>
-      )}
-      <form onSubmit={confirmar}>
-        <input
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          maxLength={6}
-          value={codigo}
-          onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
-          placeholder="000000"
-          required
-        />
-        {erro && <p className="erro">{erro}</p>}
-        <button type="submit" disabled={ocupado || codigo.length !== 6}>
-          {ocupado ? 'Verificando...' : 'Confirmar'}
-        </button>
-      </form>
-      <button type="button" className="sec" onClick={() => supabase.auth.signOut()}>
-        Sair
-      </button>
-    </main>
+    <CartaoAuth
+      icone={<IconeCelular />}
+      titulo="Proteja sua conta"
+      subtitulo="Ative a verificação em 2 etapas. Só precisa fazer isso uma vez."
+      rodape={sair}
+    >
+      <ol className="passos">
+        <li>
+          <span className="passo-num">1</span>
+          <div>
+            <b>Instale um app autenticador</b>
+            <small>Google Authenticator, Microsoft Authenticator, Authy ou 1Password.</small>
+          </div>
+        </li>
+        <li>
+          <span className="passo-num">2</span>
+          <div>
+            <b>Escaneie o QR code</b>
+            <small>No app, toque em “+” e escolha ler QR code.</small>
+          </div>
+        </li>
+      </ol>
+      <div className="qr-moldura">
+        <img className="qr" src={qr} alt="QR code para o app autenticador" />
+      </div>
+      <details className="chave-manual">
+        <summary>Não consegue escanear? Use a chave</summary>
+        <div className="chave-linha">
+          <code className="segredo">{segredo?.match(/.{1,4}/g)?.join(' ')}</code>
+          <button type="button" className="sec" onClick={copiarChave}>
+            {copiado ? 'Copiada!' : 'Copiar'}
+          </button>
+        </div>
+        <small>Guarde essa chave no seu gerenciador de senhas: ela é o seu backup se trocar de celular.</small>
+      </details>
+      <ol className="passos" start={3}>
+        <li>
+          <span className="passo-num">3</span>
+          <div>
+            <b>Digite o código que apareceu</b>
+            <small>São 6 números que mudam a cada 30 segundos.</small>
+          </div>
+        </li>
+      </ol>
+      {formulario}
+    </CartaoAuth>
   )
 }

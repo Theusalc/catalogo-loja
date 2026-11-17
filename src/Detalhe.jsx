@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-const brl = (v) =>
-  Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+import { Preco, Selos, compartilhar } from './Preco'
 
 export default function Detalhe({ produto, whatsapp, onFechar }) {
   const fotos = produto.fotos?.length
@@ -11,6 +10,15 @@ export default function Detalhe({ produto, whatsapp, onFechar }) {
       : []
   const [i, setI] = useState(0)
   const toqueX = useRef(null)
+  const [aviso, setAviso] = useState(null)
+
+  async function aoCompartilhar() {
+    const r = await compartilhar(produto)
+    if (r === 'copiado') {
+      setAviso('Link copiado!')
+      setTimeout(() => setAviso(null), 2500)
+    }
+  }
 
   const passo = (d) => setI((a) => (a + d + fotos.length) % fotos.length)
 
@@ -49,6 +57,7 @@ export default function Detalhe({ produto, whatsapp, onFechar }) {
 
         <div className="galeria" onTouchStart={aoTocar} onTouchEnd={aoSoltar}>
           {fotos.length > 0 && <img src={fotos[i]} alt={produto.nome} />}
+          <Selos produto={produto} />
           {fotos.length > 1 && (
             <>
               <button className="seta esq" onClick={() => passo(-1)} aria-label="Foto anterior">‹</button>
@@ -75,18 +84,21 @@ export default function Detalhe({ produto, whatsapp, onFechar }) {
 
         <div className="modal-info">
           <h2>{produto.nome}</h2>
-          <strong>{brl(produto.preco)}</strong>
+          <Preco produto={produto} />
           {produto.descricao && <p>{produto.descricao}</p>}
           <a
             className="btn-whats"
             href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(
-              'Olá! Tenho interesse em: ' + produto.nome
+              'Olá! Tenho interesse em: ' + produto.nome + ' ' + window.location.origin + '/produto/' + produto.id
             )}`}
             target="_blank"
             rel="noreferrer"
           >
             Chamar no WhatsApp
           </a>
+          <button type="button" className="sec btn-compartilhar" onClick={aoCompartilhar}>
+            {aviso || 'Compartilhar este produto'}
+          </button>
         </div>
       </div>
     </div>

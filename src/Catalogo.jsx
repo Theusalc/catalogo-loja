@@ -1,8 +1,10 @@
 
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from './supabaseClient'
 import VoltarAoTopo from './VoltarAoTopo'
 import Detalhe from './Detalhe'
+import { Preco, Selos, precoFinal } from './Preco'
 
 const WHATSAPP = '55017981312643' // troque: 55 + DDD + número, só dígitos
 
@@ -14,7 +16,9 @@ export default function Catalogo() {
   const [categorias, setCategorias] = useState([])
   const [busca, setBusca] = useState('')
   const [categoria, setCategoria] = useState('todas')
-  const [aberto, setAberto] = useState(null)
+  const [ordem, setOrdem] = useState('destaque')
+  const { id } = useParams()
+  const navigate = useNavigate()
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
 
@@ -22,7 +26,9 @@ export default function Catalogo() {
     Promise.all([
       supabase
         .from('produtos')
-        .select('id, nome, descricao, preco, foto_url, fotos, categoria_id')
+        .select(
+          'id, nome, descricao, preco, preco_promocional, destaque, foto_url, fotos, categoria_id'
+        )
         .order('nome'),
       supabase.from('categorias').select('id, nome').order('nome'),
     ]).then(([p, c]) => {
@@ -35,21 +41,37 @@ export default function Catalogo() {
 
   const filtrados = useMemo(() => {
     const termo = semAcento(busca.trim())
-    return produtos.filter(
+    const lista = produtos.filter(
       (p) =>
         (categoria === 'todas' || String(p.categoria_id) === categoria) &&
         (!termo ||
           semAcento(p.nome).includes(termo) ||
           semAcento(p.descricao).includes(termo))
     )
-  }, [produtos, busca, categoria])
+    const porNome = (a, b) => a.nome.localeCompare(b.nome, 'pt-BR')
+    const comparar = {
+      destaque: (a, b) => Number(b.destaque) - Number(a.destaque) || porNome(a, b),
+      menor: (a, b) => precoFinal(a) - precoFinal(b) || porNome(a, b),
+      maior: (a, b) => precoFinal(b) - precoFinal(a) || porNome(a, b),
+      nome: porNome,
+    }[ordem]
+    return [...lista].sort(comparar)
+  }, [produtos, busca, categoria, ordem])
+
+  const aberto = id ? produtos.find((p) => String(p.id) === id) : null
+  const abrir = (p) => navigate(`/produto/${p.id}`)
+  const fechar = () => navigate('/')
 
   if (carregando) return <p className="aviso">Carregando produtos...</p>
   if (erro) return <p className="aviso">Não foi possível carregar: {erro}</p>
 
   return (
     <main className="catalogo">
-      <h1>Nossos produtos</h1>
+      <header className="topo-loja">
+        <h1>
+          <img src="/logo-toque-feminino.png" alt="Toque Feminino" />
+        </h1>
+      </header>
 
       <input
         className="busca"
@@ -58,6 +80,16 @@ export default function Catalogo() {
         value={busca}
         onChange={(e) => setBusca(e.target.value)}
       />
+
+      <label className="ordenar">
+        Ordenar por
+        <select value={ordem} onChange={(e) => setOrdem(e.target.value)}>
+          <option value="destaque">Em destaque</option>
+          <option value="menor">Menor preço</option>
+          <option value="maior">Maior preço</option>
+          <option value="nome">Nome (A–Z)</option>
+        </select>
+      </label>
 
       {categorias.length > 0 && (
         <div className="filtros">
@@ -79,6 +111,13 @@ export default function Catalogo() {
         </div>
       )}
 
+      {id && !aberto && (
+        <p className="aviso">
+          Produto não encontrado ou indisponível.{' '}
+          <button className="sec" onClick={fechar}>Ver catálogo</button>
+        </p>
+      )}
+
       {filtrados.length === 0 && (
         <p className="aviso">Nenhum produto encontrado.</p>
       )}
@@ -89,24 +128,20 @@ export default function Catalogo() {
             <button
               type="button"
               className="foto"
-              onClick={() => setAberto(p)}
+              onClick={() => abrir(p)}
               aria-label={`Ver detalhes de ${p.nome}`}
             >
               {p.foto_url && (
                 <img src={p.foto_url} alt={p.nome} loading="lazy" />
               )}
+              <Selos produto={p} />
               {p.fotos?.length > 1 && (
                 <span className="qtd">{p.fotos.length} fotos</span>
               )}
             </button>
-            <h2 onClick={() => setAberto(p)}>{p.nome}</h2>
+            <h2 onClick={() => abrir(p)}>{p.nome}</h2>
             <p>{p.descricao}</p>
-            <strong>
-              {Number(p.preco).toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              })}
-            </strong>
+            <Preco produto={p} />
             <a
               href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
                 'Olá! Tenho interesse em: ' + p.nome
@@ -124,7 +159,7 @@ export default function Catalogo() {
         <Detalhe
           produto={aberto}
           whatsapp={WHATSAPP}
-          onFechar={() => setAberto(null)}
+          onFechar={fechar}
         />
       )}
 

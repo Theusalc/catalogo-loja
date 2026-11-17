@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Tokke',
-        short_name: 'Loja_APP',
-        description: 'Catálogo de produtos da loja',
+        name: 'Toque Feminino',
+        short_name: 'Toque',
+        description: 'Catálogo de produtos da Toque Feminino',
         lang: 'pt-BR',
         theme_color: '#8b5e3c',
         background_color: '#f6f6f4',

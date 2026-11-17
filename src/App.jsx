@@ -6,6 +6,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/admin" element={<Admin />} />
+      <Route path="/produto/:id" element={<Catalogo />} />
       <Route path="*" element={<Catalogo />} />
     </Routes>
   )

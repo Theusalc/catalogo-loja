@@ -5,11 +5,11 @@ const MAX_FOTOS = 6
 
 const VAZIO = {
   id: null, codigo: '', nome: '', descricao: '',
-  preco: '', categoria_id: '', foto_url: '', fotos: [], ativo: true,
+  preco: '', preco_promocional: '', destaque: false,
+  categoria_id: '', foto_url: '', fotos: [], ativo: true,
 }
 
-const brl = (v) =>
-  Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+import { brl } from './Preco'
 
 async function reduzir(arquivo, max = 800) {
   const bmp = await createImageBitmap(arquivo)
@@ -27,6 +27,11 @@ function FormProduto({ inicial, categorias, onSalvo, onCancelar }) {
     preco: inicial.preco === '' ? '' : String(inicial.preco).replace('.', ','),
     categoria_id: inicial.categoria_id ?? '',
     codigo: inicial.codigo ?? '',
+    preco_promocional:
+      inicial.preco_promocional == null
+        ? ''
+        : String(inicial.preco_promocional).replace('.', ','),
+    destaque: !!inicial.destaque,
     descricao: inicial.descricao ?? '',
   })
   // cada item: { url, previa } (já enviada) ou { arquivo, previa } (nova)
@@ -73,6 +78,10 @@ function FormProduto({ inicial, categorias, onSalvo, onCancelar }) {
     setErro(null)
     const preco = Number(f.preco.replace(',', '.'))
     if (Number.isNaN(preco)) return setErro('Preço inválido.')
+    const textoPromo = f.preco_promocional.trim()
+    const promo = textoPromo === '' ? null : Number(textoPromo.replace(',', '.'))
+    if (promo !== null && (Number.isNaN(promo) || promo <= 0 || promo >= preco))
+      return setErro('O preço promocional deve ser menor que o preço normal.')
     setSalvando(true)
 
     const urls = []
@@ -82,7 +91,7 @@ function FormProduto({ inicial, categorias, onSalvo, onCancelar }) {
         continue
       }
       const blob = await reduzir(item.arquivo)
-      const nome = `${Date.now()}-${urls.length}-${(f.codigo || 'produto').replace(/[^a-zA-Z0-9_-]/g, '')}.jpg`
+      const nome = `${Date.now()}-${urls.length}-${'produto'}.jpg`
       const { error: errUp } = await supabase.storage
         .from('fotos')
         .upload(nome, blob, { contentType: 'image/jpeg' })
@@ -94,10 +103,11 @@ function FormProduto({ inicial, categorias, onSalvo, onCancelar }) {
     }
 
     const dados = {
-      codigo: f.codigo.trim() || null,
       nome: f.nome.trim(),
       descricao: f.descricao.trim() || null,
       preco,
+      preco_promocional: promo,
+      destaque: f.destaque,
       categoria_id: f.categoria_id || null,
       fotos: urls,
       foto_url: urls[0] ?? null,
@@ -118,14 +128,15 @@ function FormProduto({ inicial, categorias, onSalvo, onCancelar }) {
       <label>Nome
         <input value={f.nome} onChange={mudar('nome')} required />
       </label>
-      <label>Código (opcional, único)
-        <input value={f.codigo} onChange={mudar('codigo')} />
-      </label>
+      {f.id && <p className="dica">Código do produto: <b>{f.codigo}</b> (gerado automaticamente)</p>}
       <label>Descrição
         <textarea rows="3" value={f.descricao} onChange={mudar('descricao')} />
       </label>
       <label>Preço (R$)
         <input inputMode="decimal" value={f.preco} onChange={mudar('preco')} required />
+      </label>
+      <label>Preço promocional (R$, opcional)
+        <input inputMode="decimal" value={f.preco_promocional} onChange={mudar('preco_promocional')} placeholder="Deixe vazio se não estiver em promoção" />
       </label>
       <label>Categoria
         <select value={f.categoria_id} onChange={mudar('categoria_id')}>
@@ -157,6 +168,14 @@ function FormProduto({ inicial, categorias, onSalvo, onCancelar }) {
         )}
       </div>
 
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={f.destaque}
+          onChange={(e) => setF({ ...f, destaque: e.target.checked })}
+        />
+        ★ Produto em destaque (aparece primeiro)
+      </label>
       <label className="check">
         <input
           type="checkbox"
@@ -248,7 +267,10 @@ export default function Painel({ email }) {
           {p.foto_url ? <img className="miniatura" src={p.foto_url} alt="" /> : <div className="miniatura" />}
           <div className="info">
             <strong>{p.nome}</strong>
-            <span>{brl(p.preco)}{p.ativo ? '' : ' · oculto'}</span>
+            <span>
+              {p.preco_promocional != null ? `${brl(p.preco_promocional)} (de ${brl(p.preco)})` : brl(p.preco)}
+              {p.destaque ? ' · ★ destaque' : ''}{p.ativo ? '' : ' · oculto'}
+            </span>
           </div>
           <div className="acoes">
             <button className="sec" onClick={() => setForm(p)}>Editar</button>

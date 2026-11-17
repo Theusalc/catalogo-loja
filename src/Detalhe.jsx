@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { Preco, Selos, compartilhar } from './Preco'
+import Imagem from './Imagem'
 
 export default function Detalhe({ produto, whatsapp, onFechar }) {
   const fotos = produto.fotos?.length
@@ -56,7 +57,7 @@ export default function Detalhe({ produto, whatsapp, onFechar }) {
         </button>
 
         <div className="galeria" onTouchStart={aoTocar} onTouchEnd={aoSoltar}>
-          {fotos.length > 0 && <img src={fotos[i]} alt={produto.nome} />}
+          {fotos.length > 0 && <Imagem key={fotos[i]} src={fotos[i]} alt={produto.nome} />}
           <Selos produto={produto} />
           {fotos.length > 1 && (
             <>

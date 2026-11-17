@@ -5,6 +5,7 @@ import { supabase } from './supabaseClient'
 import VoltarAoTopo from './VoltarAoTopo'
 import Detalhe from './Detalhe'
 import { Preco, Selos, precoFinal } from './Preco'
+import Imagem from './Imagem'
 
 const WHATSAPP = '55017981312643' // troque: 55 + DDD + número, só dígitos
 
@@ -62,7 +63,25 @@ export default function Catalogo() {
   const abrir = (p) => navigate(`/produto/${p.id}`)
   const fechar = () => navigate('/')
 
-  if (carregando) return <p className="aviso">Carregando produtos...</p>
+  if (carregando)
+    return (
+      <main className="catalogo" aria-busy="true">
+        <header className="topo-loja">
+          <h1>
+            <img src="/logo-toque-feminino.png" alt="Toque Feminino" />
+          </h1>
+        </header>
+        <div className="grade">
+          {Array.from({ length: 8 }, (_, k) => (
+            <div key={k} className="card esqueleto" aria-hidden="true">
+              <div className="foto" />
+              <span className="linha-esq" />
+              <span className="linha-esq curta" />
+            </div>
+          ))}
+        </div>
+      </main>
+    )
   if (erro) return <p className="aviso">Não foi possível carregar: {erro}</p>
 
   return (
@@ -73,6 +92,7 @@ export default function Catalogo() {
         </h1>
       </header>
 
+      <div className="barra">
       <input
         className="busca"
         type="search"
@@ -110,6 +130,7 @@ export default function Catalogo() {
           ))}
         </div>
       )}
+      </div>
 
       {id && !aberto && (
         <p className="aviso">
@@ -123,8 +144,12 @@ export default function Catalogo() {
       )}
 
       <div className="grade">
-        {filtrados.map((p) => (
-          <article key={p.id} className="card">
+        {filtrados.map((p, n) => (
+          <article
+            key={p.id}
+            className="card"
+            style={{ '--i': Math.min(n, 14) }}
+          >
             <button
               type="button"
               className="foto"
@@ -132,7 +157,7 @@ export default function Catalogo() {
               aria-label={`Ver detalhes de ${p.nome}`}
             >
               {p.foto_url && (
-                <img src={p.foto_url} alt={p.nome} loading="lazy" />
+                <Imagem src={p.foto_url} alt={p.nome} loading="lazy" />
               )}
               <Selos produto={p} />
               {p.fotos?.length > 1 && (

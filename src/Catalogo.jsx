@@ -72,18 +72,28 @@ export default function Catalogo() {
       itens.forEach((el) => el.classList.add('dentro'))
       return
     }
+    let respondeu = false
     const obs = new IntersectionObserver(
-      (entradas) =>
+      (entradas) => {
+        respondeu = true
         entradas.forEach((en) => {
           if (en.isIntersecting) {
             en.target.classList.add('dentro')
             obs.unobserve(en.target)
           }
-        }),
+        })
+      },
       { rootMargin: '0px 0px -6% 0px', threshold: 0.05 }
     )
     itens.forEach((el) => obs.observe(el))
-    return () => obs.disconnect()
+    // segurança: se o navegador não avisar nada, mostra tudo (nunca fica em branco)
+    const reserva = setTimeout(() => {
+      if (!respondeu) itens.forEach((el) => el.classList.add('dentro'))
+    }, 1200)
+    return () => {
+      clearTimeout(reserva)
+      obs.disconnect()
+    }
   }, [carregando, filtrados, ordem, categoria])
 
   if (carregando)

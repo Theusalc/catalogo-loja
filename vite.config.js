@@ -8,14 +8,14 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'logo-toque-feminino.png'],
       manifest: {
         name: 'Toque Feminino',
         short_name: 'Toque',
         description: 'Catálogo de produtos da Toque Feminino',
         lang: 'pt-BR',
-        theme_color: '#8b5e3c',
-        background_color: '#f6f6f4',
+        theme_color: '#a65f5e',
+        background_color: '#fbf3f0',
         display: 'standalone',
         start_url: '/',
         icons: [
@@ -30,7 +30,7 @@ export default defineConfig({
             type: 'image/png',
           },
           {
-            src: 'web-app-manifest-512x512.png',
+            src: 'web-app-manifest-maskable-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',

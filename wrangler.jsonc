@@ -1,9 +1,18 @@
 {
   "name": "catalogo-loja",
+  "main": "worker/index.js",
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/", "/produto/*"]
+  },
+  // Valores públicos (a chave "anon" já vai dentro do site; quem protege os
+  // dados são as regras RLS do Supabase).
+  "vars": {
+    "SUPABASE_URL": "https://lhclxeoybtcigaxeggza.supabase.co",
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoY2x4ZW95YnRjaWdheGVnZ3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMTE0MjcsImV4cCI6MjEwNzg4NzQyN30.hKKOyFvgqanPOJ-O-Z8EkgU1deA-d2SWkrYwSQarKFg"
   },
   "previews": {}
 }

@@ -249,3 +249,33 @@ html { scrollbar-gutter: stable; }
 @media (min-width: 640px) { .galeria { border-radius: 16px 16px 0 0; } }
 .modal-info { gap: 10px; padding: 16px 18px 20px; }
 .modal-info p { line-height: 1.5; }
+
+/* ===== categorias e ordenação lado a lado ===== */
+.selecoes { display: flex; gap: 8px; margin: 2px 0 10px; }
+.selecao { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--petroleo); }
+.selecao span { padding-left: 14px; opacity: .7; letter-spacing: .02em; }
+.selecao select { width: 100%; appearance: none; -webkit-appearance: none; border-radius: 99px; padding: 10px 36px 10px 16px; font-size: 14px; border: 1px solid #ecd9d5; box-shadow: 0 2px 10px rgba(166,95,94,.08); cursor: pointer; text-overflow: ellipsis;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23a65f5e' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center / 12px 8px; }
+.selecao select:hover { border-color: var(--rosa); }
+
+/* ===== botões flutuantes ===== */
+.whats-flutuante { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #2fd46f, #1ebe5a); box-shadow: 0 8px 22px rgba(37,211,102,.45); animation: pop .5s var(--suave) .4s both; }
+.whats-flutuante::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid #25d366; animation: onda 2.6s ease-out infinite; pointer-events: none; }
+.whats-flutuante:hover { transform: translateY(-3px) scale(1.05); }
+.whats-flutuante:active { transform: scale(.94); }
+.btn-topo { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); right: 21px; }
+.btn-flores { position: fixed; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20; width: 42px; height: 42px; padding: 0; border-radius: 50%; display: grid; place-items: center; color: var(--rosa-escuro); background: rgba(255,255,255,.92) !important; border: 1px solid var(--rosa-claro); box-shadow: 0 4px 14px rgba(166,95,94,.25); }
+.btn-flores:hover { transform: rotate(40deg) scale(1.08); }
+.btn-flores.desligado { color: #b9b0ae; }
+@keyframes onda { 0% { transform: scale(1); opacity: .7; } 70%, 100% { transform: scale(1.7); opacity: 0; } }
+
+/* ===== flores caindo ===== */
+.petalas { position: fixed; inset: 0; z-index: 4; overflow: hidden; pointer-events: none; }
+.petala { position: absolute; top: -40px; animation: cair var(--dur) linear var(--atraso) infinite; will-change: transform; }
+.petala i { display: block; width: var(--tam); height: var(--tam); opacity: var(--opac); border-radius: 80% 0 80% 0; background: linear-gradient(135deg, #f2c4c1, var(--rosa)); animation: balancar calc(var(--dur) / 3) ease-in-out var(--atraso) infinite alternate; }
+@keyframes cair { to { transform: translateY(calc(100vh + 80px)); } }
+@keyframes balancar { from { transform: translateX(calc(var(--balanco) * -1)) rotate(-40deg); } to { transform: translateX(var(--balanco)) rotate(160deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .petala, .petala i { animation-duration: 30s !important; }
+  .whats-flutuante::before { display: none; }
+}

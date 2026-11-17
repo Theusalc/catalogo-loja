@@ -21,7 +21,11 @@ export default function Petalas() {
   const petalas = useMemo(
     () =>
       Array.from({ length: QTD }, (_, k) => {
-        const r = (n) => ((k * 9301 + n * 49297) % 233280) / 233280 // pseudoaleatório estável
+        // pseudoaleatório estável (mesmo desenho a cada visita, bem espalhado)
+        const r = (n) => {
+          const x = Math.sin(k * 127.1 + n * 311.7) * 43758.5453
+          return x - Math.floor(x)
+        }
         return {
           left: `${(r(1) * 100).toFixed(1)}%`,
           '--tam': `${(10 + r(2) * 10).toFixed(0)}px`,
